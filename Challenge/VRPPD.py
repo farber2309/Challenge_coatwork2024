@@ -48,12 +48,70 @@ class VRPPD:
         with open(dest, 'w') as file:
             file.write(out)
         return
-            
+    
+    def mip_solve(self):
+        # declare continuous and binary variables
+
+        # define the respective constraints
+
+        # define the objective
+
+        # solve the mip
+
+        # write into data structure
+
+        return
 
     def is_feasible(self):
         pass
 
-    
+    def divide_conquer_nopt(self , nr_subinstances , nopt_param -> Int):
+        # separate the couriers and orders in randomly selected small sets
+        nr_couriers = len(self.couriers)
+        nr_deliveries = len(self.deliveries)
+
+
+        # THIS IS LIKELY BAD, USE MORE INTELLIGENT DISTRIBUTION OF ORDERS AND COURIERS
+
+        # generate list of sublists of roughly equal length
+        length_sublist_courier = nr_couriers / nr_subinstances
+        length_sublist_delivery = nr_deliveries / nr_subinstances
+
+        # create sublists with None as placeholder
+        sublists_couriers   = [None] * length_sublist_courier
+        sublists_deliveries = [None] * length_sublist_delivery
+
+        # fill the courier sublists 
+        for i in range(nr_subinstances - 1):
+            sublists_couriers[i] = self.couriers[i * length_sublist_courier : (i + 1) * length_sublist_courier]
+        
+        sublists_couriers[nr_subinstances - 1] = self.couriers[(nr_subinstances - 1) * length_sublist_courier : ]
+
+        # fill the delivery sublists
+        for i in range(nr_subinstances - 1):
+            sublists_deliveries[i] = self.deliveries[i * length_sublist_delivery : (i + 1) * length_sublist_delivery]
+        
+        sublists_deliveries[nr_subinstances - 1] = self.deliveries[(nr_subinstances - 1) * length_sublist_delivery : ]
+
+        # create subproblem instances
+        array_subproblems = [None] * nr_subinstances
+        for instance in range(nr_subinstances):
+            array_subproblems[instance] = VRPPD()
+            array_subproblems[instance].deliveries = sublists_deliveries[instance]
+
+            array_subproblems[instance].couriers = sublists_couriers[instance]
+
+            array_subproblems[instance].travel_time = self.travel_time
+
+        # solve the linear program for each subproblems
+        for subproblem in array_subproblems:
+            subproblem.mip_solve()
+
+        # partition of couriers and orders
+        # TODO
+
+        # solve the linear program generated from the reduced problem
+        return 
     def __str__(self):
         out = ""
         out += "### Deliveries ###\n"
