@@ -114,6 +114,8 @@ def process_all_instances(parent_folder):
 
     # Loop through each instance folder in the parent directory
     for instance_folder in os.listdir(parent_folder):
+        if instance_folder != '0ba3c52f-4d24-4033-be91-5dac2ad16a4f': #'0b220d8f-ba16-4848-86ef-b446ef436fce':
+            continue
         instance_folder_path = os.path.join(parent_folder, instance_folder)
 
         # Check if it's a directory (instance folder)
@@ -131,6 +133,8 @@ def process_all_instances(parent_folder):
                 })
             except FileNotFoundError as e:
                 print(e)
+        break
+        
 
     return all_instances
 
@@ -145,6 +149,23 @@ def main():
 
     # Process all instances
     all_instance_data = process_all_instances(args.parent_folder)
+
+    instance_print = 0
+    # Print the first instance's data
+    for instance in all_instance_data:
+        if instance_print == 0:
+            print(f"Instance: {instance['instance_name']}")
+            print("Couriers:")
+            for courier in instance['couriers']:
+                print(courier)
+            print("\nDeliveries:")
+            for delivery in instance['deliveries']:
+                print(delivery)
+            print("\nTravel Time Matrix:")
+            for row in instance['travel_time']:
+                print(row)
+            print()
+            instance_print += 1
 
 
 # Main execution
