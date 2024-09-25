@@ -29,7 +29,10 @@ def assign_couriers_to_deliveries(couriers, deliveries, distance_matrix_between_
                 route.stops.append(delivery.delivery_id)   # Append pickup (positive delivery ID)
                 route.stops.append(delivery.delivery_id) 
                 route_cost = get_route_cost(route, couriers, deliveries, distance_matrix_between_locations)
-                distance_matrix[i][j] = route_cost
+                if route_cost > 180:
+                    distance_matrix[i][j] = infeasible_cost
+                else:
+                    distance_matrix[i][j] = route_cost
             
 
     # Solve the assignment problem using the Hungarian algorithm
