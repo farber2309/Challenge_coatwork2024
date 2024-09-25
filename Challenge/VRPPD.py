@@ -1,5 +1,4 @@
-from read_data import *
-from feasibility_checker import * 
+from helpers import *
 import pyscipopt as scip
 
 import itertools
@@ -35,14 +34,19 @@ class VRPPD:
     SUM_TRAVEL_TIMES = None
 
     VERTICES = []
-    A1 = []
-    A2 = []
-    A3 = []
-    A4 = []
+    A_1 = []
+    A_2 = []
+    A_3 = []
+    A_4 = []
     DISTANCES = []
 
     # solution
     routes = None
+
+    # maximal time for each courier
+    MAX_ROUTE_COST = 180
+    # maximal number of deliveries for each courier
+    MAX_NR_DELIVERIES = 4
 
 
     def __init__(self):
@@ -62,11 +66,18 @@ class VRPPD:
 
         # Fill it with the data for the MIP
         self.COURIERS = [i for i in range(len(self.couriers))]
+
         for i in self.COURIERS:
             self.DEPOS.append(self.couriers[i].location)
             self.CAPACITIES.append(self.couriers[i].capacity)
         self.MAXCAP = max(self.CAPACITIES)
         self.ORDERS = [i for i in range(len(self.orders))]
+
+        # needed because of append command below
+        self.PICKUPS = []
+        self.DROPOFFS = []
+        self.SIZES = {}
+        self.TWSTART = []
 
         for i in self.ORDERS:
             self.PICKUPS.append(self.orders[i].pickup_loc)
@@ -76,19 +87,35 @@ class VRPPD:
             self.TWSTART.append(self.orders[i].time_window_start)
 
         self.VERTICES = list(set(self.DEPOS + self.PICKUPS + self.DROPOFFS))
+        
+        # all arcs from DEPOT to PICKUP
+        self.A_1 = [(u,v) for u in self.DEPOS for v in self.PICKUPS]
 
-        self.A_1 = [(u,v) for u,v in zip(self.DEPOS, self.PICKUPS)]
-        self.A_2 = [(u,v) for u,v in zip(self.PICKUPS, self.DROPOFFS) if u!=v]
-        self.A_3 = [(u,v) for u,v in zip(self.DROPOFFS, self.DEPOS)]
+        # all arcs form PICKUP to DROPOFF and vice versa
+        self.A_2 = [(u,v)
+                for u in list(set(self.PICKUPS + self.DROPOFFS))
+                for v in list(set(self.PICKUPS + self.DROPOFFS))
+                if u != v
+              ]
+        
+        # all arcs from DROPOFF TO DEPOT
+        self.A_3 = [(u,v) for u in self.DROPOFFS for v in self.DEPOS]
+
+        # loops from each DEPOT to itself
         self.A_4 = [(u,u) for u in self.DEPOS]
 
         # set of all arcs in the graph ?
         self.A = list(set(self.A_1) | set(self.A_2) | set(self.A_3) | set(self.A_4))
 
-        DISTANCES = np.array(self.travel_time)[1:,1:].astype(np.int16)
+        self.DISTANCES = np.array(self.travel_time)[1:,1:].astype(np.int64)
 
-        # defined as a sum all of travel time - just an arbitrary large number 
-        self.T = np.sum(DISTANCES.flatten())
+        # defined as a sum all of travel time - just an arbitrary large number
+        
+        self.T = 0
+        for (u,v) in self.A:
+            self.T += self.DISTANCES[u-1,v-1]
+        
+        # self.T = np.sum(self.DISTANCES.flatten())
         # name alias
         self.SUM_TRAVEL_TIMES = self.T
 
@@ -125,11 +152,11 @@ class VRPPD:
         for i in self.VERTICES:
                 t[i] = model.addVar(vtype="C", name=f't[{i}]')
 
-        q= {}
+        q = {}
         for i in self.VERTICES:
                 q[i] = model.addVar(vtype="C", name=f'q[{i}]', ub=self.MAXCAP)
 
-        x={}
+        x = {}
         for i in self.VERTICES:
             for j in self.VERTICES:
                 for k in self.COURIERS:
@@ -138,45 +165,44 @@ class VRPPD:
         # 2
         # every vertex should be visited only ones 
         for v in self.VERTICES:
-            model.addCons(scip.quicksum(x[i,v,k] for i in self.VERTICES for k in self.COURIERS) == 1)
+            model.addCons(scip.quicksum(x[u,v,k] for u in self.VERTICES if (u,v) in self.A and u != v for k in self.COURIERS) == 1)
 
         # 3 
         # the same vehicle that visits a vertex does also leave it 
         for v in self.VERTICES :
             for k in self.COURIERS:
-                    model.addCons(scip.quicksum(x[v,u,k] for u in self.VERTICES)- scip.quicksum(x[u,v,k] for u in self.VERTICES) == 0)
+                model.addCons(scip.quicksum(x[v,u,k] for u in self.VERTICES if (v,u) in self.A)
+                              == scip.quicksum(x[u,v,k] for u in self.VERTICES if (u,v) in self.A))
 
         # 4 
         # guarantee that the same vehicle that visits a
         # pickup vertex does also visit the corresponding delivery vertex
 
         for o in self.ORDERS:
-                for k in self.COURIERS:
-                        model.addCons(scip.quicksum(x[u,self.PICKUPS[o],k] for u in self.VERTICES) - scip.quicksum(x[u, self.DROPOFFS[o],k] for u in self.VERTICES) == 0)
+            for k in self.COURIERS:
+                model.addCons(scip.quicksum(x[u,self.PICKUPS[o],k] for u in self.VERTICES if (u, self.PICKUPS[o]) in self.A)
+                              == scip.quicksum(x[u,self.DROPOFFS[o],k] for u in self.VERTICES if (u,self.DROPOFFS[o]) in self.A))
 
         # 5 
         # only the vehicle corresponding to its depot can leave it 
         for k in self.COURIERS:
-            model.addCons(scip.quicksum(x[self.DEPOS[k],v,k] for v in self.VERTICES) ==1) 
+            model.addCons(scip.quicksum(x[self.DEPOS[k],v,k] for v in self.VERTICES if (self.DEPOS[k] , v) in self.A) == 1) 
 
         # 6
         # ensure that the time variables for the vertices are correctly updated 
         # A1 from depos to pickup
         # A2 form pickup to dropoff (u!=v)
 
-        A_1 = [(u,v) for u in self.DEPOS for v in self.PICKUPS]
-        A_2 = [(u,v) for u in self.PICKUPS for v in self.DROPOFFS if u!=v]
-
         for k in self.COURIERS:
-            for arc in list(set(A_1 + A_2)):
-                    u,v = arc[0],arc[1]      
-                    model.addCons(t[u] + (self.DISTANCES[u-1,v-1] + self.T)*x[u,v,k] <= t[v] + self.T)
+            for (u,v) in list(set(self.A_1 + self.A_2)):
+                # u,v = arc[0], arc[1]      
+                model.addCons(t[u] + (self.DISTANCES[u-1,v-1] + self.T)*x[u,v,k] <= t[v] + self.T)
                     
 
         # 7 
         # ensure that the pickup is visited before the corresponding dropoff.
         for o in self.ORDERS:
-            model.addCons(t[self.DROPOFFS[o]] - t[self.PICKUPS[o]] >= self.DISTANCES[self.DROPOFFS[o]-1,self.PICKUPS[o]-1])
+            model.addCons(t[self.DROPOFFS[o]] - t[self.PICKUPS[o]] >= self.DISTANCES[self.PICKUPS[o]-1, self.DROPOFFS[o]-1])
 
         # 8 
 
@@ -184,31 +210,48 @@ class VRPPD:
         # A4 loops on starts 
 
         for k in self.COURIERS:
-            for arc in list(set(A_1 + A_2)):
-                    u,v = arc[0],arc[1]
-                    model.addCons(q[u] + (self.SIZES[v] + self.MAXCAP)*x[u,v,k] <= q[v] + self.MAXCAP)
+            for (u,v) in list(set(self.A_1 + self.A_2)):
+                # u,v = arc[0],arc[1]
+                model.addCons(q[u] + (self.SIZES[v] + self.MAXCAP)*x[u,v,k] <= (q[v] + self.MAXCAP))
 
         # 9 
         # load at the depots is already fixed
         for k in self.COURIERS:
-            model.addCons(q[self.DEPOS[k]]== self.CAPACITIES[k])
+            model.addCons(q[self.DEPOS[k]] == self.MAXCAP - self.CAPACITIES[k])
 
         # 10 
         # t is representing the time when a vertex is visited by a vehicle. As we can see, this
         # variable has to respect the bounds of the respective time window.
+        for o in self.ORDERS:
+            model.addCons(t[self.PICKUPS[o]] >= self.TWSTART[o])
 
-        for o in ORDERS:
-            model.addCons(t[PICKUPS[o]]>= TWSTART[o])
+        # 11
+        # new constraint with prohibiting more than 4 jobs
+
+        for k in self.COURIERS:
+            model.addCons(
+                scip.quicksum(x[u, v, k] for v in self.PICKUPS for u in self.VERTICES if u != v) <= self.MAX_NR_DELIVERIES
+            )
+
+        # 12
+        # new contraint to prohibit running time above 180 min for a courier
+        for k in self.COURIERS:
+            model.addCons(scip.quicksum(self.DISTANCES[u - 1, v - 1] * x[u, v, k] for (u , v) in self.A) <= self.MAX_ROUTE_COST)
+
+        
+        model.setObjective(scip.quicksum(t[v] for v in self.DROPOFFS), sense = 'minimize')
             
-        model.setObjective(quicksum(t[v] for v in DROPOFFS))
-            
+        model.setParam("limits/time", 3)
+        # suppress output by scip
+        # model.hideOutput(True)
 
         model.optimize() 
         if model.getNSols() == 0:
             print("No feasible solution found.")
         else:
-            print(f'Objective value={model.getObjVal()}')
-            print(f'Solution: x={model.getBestSol()}')  
+            pass
+            # print(f'Objective value={model.getObjVal()}')
+            # print(f'Solution: x={model.getBestSol()}')  
 
         return
     
@@ -315,34 +358,60 @@ class VRPPD:
             route.stops.append(delivery.delivery_id)   # Append pickup (positive delivery ID)
             route.stops.append(delivery.delivery_id)  # Append dropoff (negative delivery ID)
     
-    def greedy_sol(self):
+    def naive_sol(self):
         nr_couriers = len(self.couriers)
-        open_deliveries = self.delivieries
+        # open_deliveries = self.deliveries
         current_locations = [None] * nr_couriers
-        routes = [None] * nr_couriers
+        naive_routes = [None] * nr_couriers
+        naive_costs = [0] * nr_couriers
+        for route_iter in range(nr_couriers):
+            rider_id = self.couriers[route_iter].courier_id
+            naive_routes[route_iter] = Route(rider_id = rider_id , stops = [])
 
         # init current locations for each courier by being the depot
-        for courier_iter in nr_couriers:
+        for courier_iter in range(nr_couriers):
             current_locations[courier_iter] = self.DEPOS[courier_iter]
         
-        route_costs = [0] * nr_couriers
-        open_delivieries = sorted(open_delivieries, key = lambda x : x.time_window_start)
-        
+        # get time windows
+        time_windows = [-1] * len(self.deliveries)
+        for iter in range(len(self.deliveries)):
+            time_windows[iter] = self.deliveries[iter].time_window_start
+
+        sorting_index = np.argsort(time_windows)
+        open_deliveries = [None] * len(self.deliveries)
+        for iter in range(len(self.deliveries)):
+            open_deliveries[iter] = self.deliveries[sorting_index[iter]]
+
         while len(open_deliveries) > 0:
-            current_delivery = open_delivieries[0]
+            current_delivery = open_deliveries.pop(0)
             # get closest driver to delivery pickup
             closest = -1
             best_distance = 2 << 30
             for courier_iter in range(nr_couriers):
+                # skip if already four deliveries (here the same as four stops)
+                if len(naive_routes[courier_iter].stops) > 3:
+                    continue
+                if self.couriers[courier_iter].capacity < current_delivery.capacity:
+                    continue
                 current_loc = current_locations[courier_iter]
                 pickup_loc = current_delivery.pickup_loc
-                distance = self.travel_time[current_locations , pickup_loc]
-                if distance < best_distance:
-                    closest = current_delivery
+                dropoff_loc = current_delivery.dropoff_loc
+                distance = self.DISTANCES[current_loc-1][pickup_loc-1] + self.DISTANCES[pickup_loc-1][dropoff_loc-1]
+                # if best distance so far and below MAX RUTE COST
+                if distance < best_distance and naive_costs[courier_iter] + distance < self.MAX_ROUTE_COST:
+                    best_distance = distance
+                    closest = courier_iter
             # add pickup loc and drop off to the route
+            stops = naive_routes[closest].stops
+            stops.extend([current_delivery,pickup_loc , current_delivery.dropoff_loc])
 
-            # update current location
+            # update current location to be dropoff
+            current_locations[closest] = current_delivery.dropoff_loc
+            # erase the assigned delivery
+        self.routes = naive_routes
+        print(naive_routes)
         return
+    
     # untested
     def nopt(self , nopt_param):
         self.get_init_sol()
