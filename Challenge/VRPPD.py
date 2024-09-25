@@ -48,10 +48,10 @@ class VRPPD:
     def __init__(self):
         pass
     
+    # tested
     def read(self , instance_folder_path):
         # read in data
         self.instance_folder_path = instance_folder_path
-        print(instance_folder_path)
         [self.couriers, self.deliveries , self.travel_time] = process_instance_folder(instance_folder_path)
         # name alias for deliveries
         self.orders = self.deliveries
@@ -93,7 +93,8 @@ class VRPPD:
         self.SUM_TRAVEL_TIMES = self.T
 
         return
-        
+    
+    # tested
     def write(self , dest):
         # dest is the name of the destination
         # open the file
@@ -116,6 +117,7 @@ class VRPPD:
             file.write(out)
         return
     
+    # old, outdated
     def mip_solve(self):
         model = scip.Model()
 
@@ -210,6 +212,7 @@ class VRPPD:
 
         return
     
+    # untested
     def lp_solve(self , x):
         # x : binary variablesabout which courier is taking which route
         # solve lp for a given set of binaries variables
@@ -254,12 +257,14 @@ class VRPPD:
             print(f'Solution: x={model.getBestSol()}')
         return
 
+    # outdated
     def is_feasible(self):
         for route in self.routes:
-            if not is_feasible(route , self.couriers, self.deliveries):
+            if not is_feasible(route , self.couriers, self.deliveries, self.travel_time):
                 return False
         return True
     
+    # untested
     def routes_to_x(self):
         x = np.zeros(len(self.A) , len(self.COURIERS))
         # get 'x' as proposed in the MIP in the original text
@@ -271,7 +276,7 @@ class VRPPD:
                     x[arc_iter , courier_iter] = 1
         return x
              
-
+    # untested
     def x_to_routes(self , x):
         routes = [None] * len(self.COURIERS)
         for courier_iter in range(len(self.COURIERS)):
@@ -287,12 +292,15 @@ class VRPPD:
             routes[courier_iter] = Route(rider_id = self.courier[courier_iter] , stops = stops)
         return routes
 
+    # untested
     def get_obj(self):
-         # calculate the objective of given the current proposed solution in self.routes
-        pass
-         
+        # taken form the feasibility checker get_cost:
+        output = 0
+        for route in self.routes:
+            output += get_route_cost(route, self.couriers, self.deliveries , self.travel_time)
+        return output
 
-
+    # tested
     def get_init_sol(self):
         # code taken from simulated_annealing.py
         # Create a list of Route objects for each courier
@@ -307,17 +315,49 @@ class VRPPD:
             route.stops.append(delivery.delivery_id)   # Append pickup (positive delivery ID)
             route.stops.append(delivery.delivery_id)  # Append dropoff (negative delivery ID)
     
-    def nopt(self , nopt_param):
-         self.get_init_sol()
-         for route in self.couriers:
-              pass
-         return
+    def greedy_sol(self):
+        nr_couriers = len(self.couriers)
+        open_deliveries = self.delivieries
+        current_locations = [None] * nr_couriers
+        routes = [None] * nr_couriers
 
+        # init current locations for each courier by being the depot
+        for courier_iter in nr_couriers:
+            current_locations[courier_iter] = self.DEPOS[courier_iter]
+        
+        route_costs = [0] * nr_couriers
+        open_delivieries = sorted(open_delivieries, key = lambda x : x.time_window_start)
+        
+        while len(open_deliveries) > 0:
+            current_delivery = open_delivieries[0]
+            # get closest driver to delivery pickup
+            closest = -1
+            best_distance = 2 << 30
+            for courier_iter in range(nr_couriers):
+                current_loc = current_locations[courier_iter]
+                pickup_loc = current_delivery.pickup_loc
+                distance = self.travel_time[current_locations , pickup_loc]
+                if distance < best_distance:
+                    closest = current_delivery
+            # add pickup loc and drop off to the route
+
+            # update current location
+        return
+    # untested
+    def nopt(self , nopt_param):
+        self.get_init_sol()
+        for route in self.couriers:
+            pass
+        return
+
+    # untested
     def divide_conquer_init_sol():
         # every courier has at most four stops.
 
+        # distribute the 
         return 
 
+    # untested
     def divide_conquer_nopt(self , nr_subinstances , nopt_param):
         # separate the couriers and orders in randomly selected small sets
         nr_couriers = len(self.couriers)
@@ -364,7 +404,9 @@ class VRPPD:
         # TODO
 
         # solve the linear program generated from the reduced problem
-        return 
+        return
+    
+    # tested
     def __str__(self):
         out = ""
         out += "### Deliveries ###\n"
@@ -434,4 +476,4 @@ def test_is_feasible():
 
 # test_read_routes()
 
-test_is_feasible()
+# test_is_feasible()
