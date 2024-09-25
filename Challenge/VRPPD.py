@@ -75,12 +75,15 @@ class VRPPD:
             self.SIZES[self.orders[i].dropoff_loc] =  - self.orders[i].capacity 
             self.TWSTART.append(self.orders[i].time_window_start)
 
-        VERTICES= list(set(self.DEPOS + self.PICKUPS + self.DROPOFFS))
+        self.VERTICES = list(set(self.DEPOS + self.PICKUPS + self.DROPOFFS))
 
-        A_1 = [(u,v) for u,v in zip(self.DEPOS, self.PICKUPS)]
-        A_2 = [(u,v) for u,v in zip(self.PICKUPS, self.DROPOFFS) if u!=v]
-        A_3 = [(u,v) for u,v in zip(self.DROPOFFS, self.DEPOS)]
-        A_4 = [(u,u) for u in self.DEPOS]
+        self.A_1 = [(u,v) for u,v in zip(self.DEPOS, self.PICKUPS)]
+        self.A_2 = [(u,v) for u,v in zip(self.PICKUPS, self.DROPOFFS) if u!=v]
+        self.A_3 = [(u,v) for u,v in zip(self.DROPOFFS, self.DEPOS)]
+        self.A_4 = [(u,u) for u in self.DEPOS]
+
+        # set of all arcs in the graph ?
+        self.A = list(set(self.A_1) | set(self.A_2) | set(self.A_3) | set(self.A_4))
 
         DISTANCES = np.array(self.travel_time)[1:,1:].astype(np.int16)
 
@@ -88,8 +91,9 @@ class VRPPD:
         self.T = np.sum(DISTANCES.flatten())
         # name alias
         self.SUM_TRAVEL_TIMES = self.T
-        
 
+        return
+        
     def write(self , dest):
         # dest is the name of the destination
         # open the file
@@ -256,6 +260,42 @@ class VRPPD:
                 return False
         return True
     
+    def routes_to_x(self):
+        x = np.zeros(len(self.A) , len(self.COURIERS))
+        # get 'x' as proposed in the MIP in the original text
+        for arc_iter in range(len(self.A)) :
+            (u , v) = self.A[arc_iter]
+            for courier_iter in self.COURIERS:
+                stops = self.routes[courier_iter].stops
+                if (u, v) in [ tuple(stops[iter : iter + 2]) for iter in range(len(stops - 1))]:
+                    x[arc_iter , courier_iter] = 1
+        return x
+             
+
+    def x_to_routes(self , x):
+        routes = [None] * len(self.COURIERS)
+        for courier_iter in range(len(self.COURIERS)):
+            stops = []
+            for arc_iter in range(len(self.A)):
+                if x[arc_iter , courier_iter] == 1:
+                    # check whether stops list is empty
+                    if not stops:
+                        stops.extend(self.A[arc_iter])
+                    else:
+                        stops[-1] == self.A(arc_iter)
+                    pass
+
+
+
+
+         
+
+    def get_obj(self):
+         # calculate the objective of given the current proposed solution in self.routes
+        pass
+         
+
+
     def get_init_sol(self):
         # code taken from simulated_annealing.py
         # Create a list of Route objects for each courier
