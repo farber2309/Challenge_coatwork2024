@@ -18,6 +18,9 @@ def copy_routes(routes):
         new_routes.append(new_route)
     return new_routes
 
+def copy_route(route):
+    return Route(route.rider_id, route.stops.copy())
+
 def get_objective(solution, couriers, deliveries, distance_matrix):
     total_time = 0
     for route in solution:
