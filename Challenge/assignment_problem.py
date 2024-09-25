@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
             initial_solution = generate_initial_solution(couriers, deliveries)
             for route in initial_solution:
-                route_is_feasible = is_feasible(route,couriers,deliveries)
+                route_is_feasible = is_feasible(route,couriers,deliveries, distance_matrix)
                 if not route_is_feasible:
                     print("Route is not feasible")   
             initial_objective = get_objective(initial_solution, couriers, deliveries, distance_matrix)
