@@ -125,7 +125,7 @@ class VRPPD:
 
         q= {}
         for i in self.VERTICES:
-                q[i] = model.addVar(vtype="C", name=f'q[{i}]', ub=MAXCAP)
+                q[i] = model.addVar(vtype="C", name=f'q[{i}]', ub=self.MAXCAP)
 
         x={}
         for i in self.VERTICES:
@@ -281,14 +281,11 @@ class VRPPD:
                     # check whether stops list is empty
                     if not stops:
                         stops.extend(self.A[arc_iter])
-                    else:
-                        stops[-1] == self.A(arc_iter)
-                    pass
-
-
-
-
-         
+                    # last stop needs to be starting point of the next arc
+                    if stops[-1] == self.A(arc_iter)[0]:
+                        stops.append(self.A(arc_iter)[1])
+            routes[courier_iter] = Route(rider_id = self.courier[courier_iter] , stops = stops)
+        return routes
 
     def get_obj(self):
          # calculate the objective of given the current proposed solution in self.routes
@@ -316,6 +313,10 @@ class VRPPD:
               pass
          return
 
+    def divide_conquer_init_sol():
+        # every courier has at most four stops.
+
+        return 
 
     def divide_conquer_nopt(self , nr_subinstances , nopt_param):
         # separate the couriers and orders in randomly selected small sets
