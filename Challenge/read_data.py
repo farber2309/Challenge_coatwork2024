@@ -111,11 +111,13 @@ def process_instance_folder(instance_folder_path):
 # Main function to loop through all instance folders
 def process_all_instances(parent_folder):
     all_instances = []
-
     # Loop through each instance folder in the parent directory
     for instance_folder in os.listdir(parent_folder):
-        if instance_folder != '0ba3c52f-4d24-4033-be91-5dac2ad16a4f': #'0b220d8f-ba16-4848-86ef-b446ef436fce':
-            continue
+        # very small: '0b220d8f-ba16-4848-86ef-b446ef436fce' 1 delivery
+        # small: '1adef166-1111-45fd-b722-0f817c7fa055' 2 deliveries
+        # large: '0ba3c52f-4d24-4033-be91-5dac2ad16a4f' 745 deliveries
+        # if instance_folder != '389f96b3-a8b9-4715-9260-6842e4509073':
+        #     continue
         instance_folder_path = os.path.join(parent_folder, instance_folder)
 
         # Check if it's a directory (instance folder)
@@ -132,9 +134,7 @@ def process_all_instances(parent_folder):
                     'travel_time': travel_time
                 })
             except FileNotFoundError as e:
-                print(e)
-        break
-        
+                print(e)     
 
     return all_instances
 
@@ -150,22 +150,22 @@ def main():
     # Process all instances
     all_instance_data = process_all_instances(args.parent_folder)
 
-    instance_print = 0
-    # Print the first instance's data
-    for instance in all_instance_data:
-        if instance_print == 0:
-            print(f"Instance: {instance['instance_name']}")
-            print("Couriers:")
-            for courier in instance['couriers']:
-                print(courier)
-            print("\nDeliveries:")
-            for delivery in instance['deliveries']:
-                print(delivery)
-            print("\nTravel Time Matrix:")
-            for row in instance['travel_time']:
-                print(row)
-            print()
-            instance_print += 1
+    # instance_print = 0
+    # # Print the first instance's data
+    # for instance in all_instance_data:
+    #     if instance_print == 0:
+    #         print(f"Instance: {instance['instance_name']}")
+    #         print("Couriers:")
+    #         for courier in instance['couriers']:
+    #             print(courier)
+    #         print("\nDeliveries:")
+    #         for delivery in instance['deliveries']:
+    #             print(delivery)
+    #         print("\nTravel Time Matrix:")
+    #         for row in instance['travel_time']:
+    #             print(row)
+    #         print()
+    #         instance_print += 1
 
 
 # Main execution

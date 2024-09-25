@@ -2,7 +2,7 @@ import os
 import csv
 import argparse
 
-from read_data import Courier, Delivery
+from read_data import Courier, Delivery, process_all_instances
 
 
 # # Define the Courier class
@@ -123,31 +123,31 @@ def process_instance_folder(instance_folder_path):
 
 
 # Main function to loop through all instance folders
-def process_all_instances(parent_folder):
-  all_instances = []
+# def process_all_instances(parent_folder):
+#   all_instances = []
 
-  # Loop through each instance folder in the parent directory
-  for instance_folder in os.listdir(parent_folder):
-    instance_folder_path = os.path.join(parent_folder, instance_folder)
+#   # Loop through each instance folder in the parent directory
+#   for instance_folder in os.listdir(parent_folder):
+#     instance_folder_path = os.path.join(parent_folder, instance_folder)
 
-    # Check if it's a directory (instance folder)
-    if os.path.isdir(instance_folder_path):
-      print(f"Processing instance: {instance_folder}")
-      try:
-        couriers, deliveries, travel_time = process_instance_folder(
-          instance_folder_path)
+#     # Check if it's a directory (instance folder)
+#     if os.path.isdir(instance_folder_path):
+#       print(f"Processing instance: {instance_folder}")
+#       try:
+#         couriers, deliveries, travel_time = process_instance_folder(
+#           instance_folder_path)
 
-        # Add this instance's couriers, deliveries, and travel time matrix to the overall list
-        all_instances.append({
-          'instance_name': instance_folder,
-          'couriers': couriers,
-          'deliveries': deliveries,
-          'travel_time': travel_time
-        })
-      except FileNotFoundError as e:
-        print(e)
+#         # Add this instance's couriers, deliveries, and travel time matrix to the overall list
+#         all_instances.append({
+#           'instance_name': instance_folder,
+#           'couriers': couriers,
+#           'deliveries': deliveries,
+#           'travel_time': travel_time
+#         })
+#       except FileNotFoundError as e:
+#         print(e)
 
-  return all_instances
+#   return all_instances
 
 
 def read_routes_from_csv(csv_file):
