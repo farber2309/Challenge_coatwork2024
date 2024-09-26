@@ -33,6 +33,27 @@ def is_all_feasible(solution, couriers, deliveries):
             return False
     return True
 
+def get_route_duration(route, couriers, deliveries, travelTimes):
+    currentTime = 0
+    orders_in_bag = set()
+    courier = get_courier(couriers, route.rider_id)
+    lastLocation = courier.location
+    for activity in route.stops:
+        delivery = get_delivery(deliveries, activity)
+        if activity in orders_in_bag:
+            orders_in_bag.remove(activity)
+            currentTime = currentTime + travelTimes[lastLocation - 1][
+            delivery.dropoff_loc - 1]
+            lastLocation = delivery.dropoff_loc
+        else:
+            orders_in_bag.add(activity)
+            currentTime = max(delivery.time_window_start,
+                            currentTime + travelTimes[lastLocation - 1][
+                                delivery.pickup_loc - 1])
+            lastLocation = delivery.pickup_loc
+
+    return currentTime
+
 # Reading files from csv (given by organizers)
 
 # Function to load couriers from CSV using the csv module

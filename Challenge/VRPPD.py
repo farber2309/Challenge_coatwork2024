@@ -146,22 +146,25 @@ class VRPPD:
     
     # old, outdated
     def mip_solve(self):
+        print("MIP SOLve Start")
         model = scip.Model()
 
         t = {}
         for i in self.VERTICES:
                 t[i] = model.addVar(vtype="C", name=f't[{i}]')
+        print("t declared")
 
         q = {}
         for i in self.VERTICES:
                 q[i] = model.addVar(vtype="C", name=f'q[{i}]', ub=self.MAXCAP)
-
+        print("q declared")
+        
         x = {}
-        for i in self.VERTICES:
-            for j in self.VERTICES:
-                for k in self.COURIERS:
-                        x[i,j,k]= model.addVar(vtype='B', name=f'x[{i},{j},{k}]')
-
+        for (u,v) in self.A:
+            for k in self.COURIERS:
+                x[u,v,k] = model.addVar(vtype='B')
+        
+        print("All Variables declared")
         # 2
         # every vertex should be visited only ones 
         for v in self.VERTICES:
@@ -238,14 +241,16 @@ class VRPPD:
         for k in self.COURIERS:
             model.addCons(scip.quicksum(self.DISTANCES[u - 1, v - 1] * x[u, v, k] for (u , v) in self.A) <= self.MAX_ROUTE_COST)
 
-        
+        print("Constraint generated.")
         model.setObjective(scip.quicksum(t[v] for v in self.DROPOFFS), sense = 'minimize')
             
+        print('Objective set')
         model.setParam("limits/time", 3)
         # suppress output by scip
         # model.hideOutput(True)
-
-        model.optimize() 
+        print("Optimize now:")
+        model.optimize()
+        print('Optimization done.')
         if model.getNSols() == 0:
             print("No feasible solution found.")
         else:
