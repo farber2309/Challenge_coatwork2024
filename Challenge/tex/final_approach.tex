@@ -1,6 +1,45 @@
 \documentclass[a4paper]{article}
 \usepackage{standalone}
 
-\begin{document}
+
+% Final Approach: A detailed description of the final solution the team used for the challenge. Include brief explanations of the model, methodology, and any preprocessing steps.
+
+\begin{document}%
+Our greedy heuristic works by iteratively assigning deliveries to couriers based on a cost matrix. The algorithm prioritizes the lowest-cost assignments and updates the status of both couriers and deliveries after each assignment. Below is a breakdown of the key steps:
+
+\subsection{Main Loop: Courier-Delivery Assignment}
+This loop runs until either all deliveries are assigned or the time limit is reached. It includes the following steps:
+\begin{itemize}
+    \item \textbf{Pools Creation:} Two pools are created at each iteration:
+    \begin{itemize}
+        \item \textbf{Courier Pool:} Includes couriers available to take on new deliveries based on their current availability. At time 0, all the couriers are available.
+        \item \textbf{Delivery Pool:} Includes deliveries that are ready to be assigned based on their start time.
+    \end{itemize}
+    \item \textbf{Cost Matrix Calculation:} For each courier in the pool, the algorithm calculates the cost of assigning each delivery in the pool. The cost reflects:
+    \begin{itemize}
+        \item The feasibility of the courier handling the delivery (based on capacity). The cost is very high when the courier cannot handle the delivery.
+        \item The time required to deliver it, ensuring that the total duration does not exceed the time limit (180 minutes). The cost is very high when it takes too much time to the courier and it is equal to duration when the courier can handle the delivery.
+    \end{itemize}
+    \item \textbf{Greedy Assignment:} The algorithm assigns the delivery with the lowest cost to the corresponding courier, marking that delivery as completed and removing both the courier and delivery from further consideration for new assignments.
+\end{itemize}
+\subsection{Backtracking and Stagnation Detection}
+Sometimes, we arrive at a point when the riders that can handle the current delivers have already did to much deliveries (i.e. 4 deliveries). To avoid getting stuck in a unfeasible situation, the algorithm monitors its progress by comparing the current state of unassigned deliveries and couriers with the previous state:
+\begin{itemize}
+    \item \textbf{Backtracking:} If no progress is detected (i.e., the same number of unassigned deliveries and couriers), the algorithm restarts. In the initial pool of couriers, we do not place all the riders. We keep some of them on standby and add them later in the pool, when we are stuck. The number of  riders is set with a percentage of the number of couriers. The percentage starts at zero and increases every time we start again the algorithm because we are stuck.
+    \item \textbf{Stagnation:} When we increase the time step and the pool of riders does not change, we increase the time until a new courier is available, i.e. he finished its last delivery.
+\end{itemize}
+We have to note that the backtracking and the stagnation detection were useful only for the hard instances and not for the instances of the final sets.
+\subsection{Termination}
+The algorithm terminates under the following conditions:
+\begin{itemize}
+    \item All deliveries are assigned, and a feasible solution is found.
+    \item The time limit of 240 seconds is reached.
+\end{itemize}
+At the end of each iteration, the algorithm checks whether the current solution is feasible. If so, the routes are finalized and saved. We can note that the algorithm always found a feasible solution within the 240 seconds for all the instances of the final set.
+
+\subsection{Possible upgrades}
+Instead of computing the cost matrix between riders and deliveries in the pool in a 1 to 1 way, we can compute the cost in a way '1 couriers to combination of different deliveries'.
+
+
 
 \end{document}

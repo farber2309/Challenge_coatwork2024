@@ -1,6 +1,7 @@
 \documentclass[a4paper]{article}
 % \usepackage[UTF8]{ctex}
 \usepackage{standalone}
+\usepackage{geometry}[top = 10mm]
 
 \newcommand\path{.}
 
@@ -15,10 +16,13 @@
 
 \begin{document}%
 \maketitle%
-\section*{Challenges and Solutions}%
+The methodology implemented in this approach is based on a greedy heuristic algorithm aimed at efficiently assigning couriers to deliveries while minimizing the total time of deliveries. The main objective is to find a solution that satisfies the problem's constraints -- such as delivery time windows, courier capacity, and route duration—within a set time limit.
+\section{Challenges and Solutions}%
 \input{\path /challenges_and_solutions}%
-\section*{Final Approach}%
+\section{Final Approach}%
 \input{\path /final_approach}%
-\section*{Alternative Attempts}%
+\section{Alternative Attempts}%
 \input{\path /alternative_attempts}%
+\subsection{Conclusion}
+The greedy heuristic provides a time-efficient and flexible approach to solving the courier assignment and delivery routing problem. Its ability to adapt by incorporating backtracking and stagnation detection helps avoid infeasible results, making it well-suited for large instances where exact algorithms may be too computationally expensive.
 \end{document}%
