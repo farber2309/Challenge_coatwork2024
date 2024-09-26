@@ -125,8 +125,8 @@ def process_all_instances(parent_folder):
         # small: '1adef166-1111-45fd-b722-0f817c7fa055' 2 deliveries
         # large: '0ba3c52f-4d24-4033-be91-5dac2ad16a4f' 745 deliveries
 
-        # if instance_folder != '088fc958-5dc8-4e4f-bbf1-ea213039a3f3':
-        #     continue
+        if instance_folder != 'd76179d0-6e38-4136-a19c-f724a88ea5d4':
+            continue
         instance_folder_path = os.path.join(parent_folder, instance_folder)
 
         # Check if it's a directory (instance folder)

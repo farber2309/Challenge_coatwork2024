@@ -30,7 +30,7 @@ def greedy_heuristic(couriers, deliveries, distance_matrix):
     del_offset = len(couriers) + 1
     cou_offset = 1
 
-    while time.time() - time_init < 240:
+    while True:
         time_now = min([delivery.time_window_start for delivery in deliveries])
         
         # At starting time
@@ -44,8 +44,8 @@ def greedy_heuristic(couriers, deliveries, distance_matrix):
         tuple_detection_prev = (done_delivery.count(False), len(couriers_pool), len(deliveries_pool))
         tuple_detection_new = (0, 0, 0)
 
-        while done_delivery.count(False) > 0 and time.time() - time_init < 240:
-            # print(done_delivery.count(False), len(couriers_pool), len(deliveries_pool))
+        while done_delivery.count(False) > 0:
+            print(done_delivery.count(False), len(couriers_pool), len(deliveries_pool))
 
             # Compute the cost matrix for each rider to each delivery of the pools
             cost_matrix = np.zeros((len(couriers_pool), len(deliveries_pool)))
@@ -115,8 +115,10 @@ def greedy_heuristic(couriers, deliveries, distance_matrix):
                 
 
             while len(couriers_pool) == 0:
+                print("len courier pool updated")
                 time_now = time_now + 1
                 couriers_pool = [courier for courier in couriers if courier.available_time <= time_now]
+
                 
             tuple_detection_new = (done_delivery.count(False), len(couriers_pool), len(deliveries_pool))
             if tuple_detection_new == tuple_detection_prev:
@@ -172,6 +174,7 @@ if __name__ == "__main__":
         # greedy heuristic
         greedy_sol = greedy_heuristic(couriers, deliveries, distance_matrix)
         feasibility = is_all_feasible(greedy_sol, couriers, deliveries, distance_matrix)
+        print("Feasibility greedy: ", feasibility)
         greedy_obj = 9e6
         if feasibility:
             greedy_obj = get_objective(greedy_sol, couriers, deliveries, distance_matrix)
@@ -196,7 +199,7 @@ if __name__ == "__main__":
 
         
         # Save the solution
-        output_folder_path = "./final_solutions"
+        output_folder_path = "./final_solutions_more_time"
         instance_folder_path = './' + training_data_folder + '/' + instance['instance_name']
         if greedy_obj < assigment_obj:
             courier_order = [[delivery_id for delivery_id in route.stops] for route in greedy_sol]
