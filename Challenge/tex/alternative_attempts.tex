@@ -8,11 +8,11 @@
 Our first attempt was the MIP solver.
 The corresponding implementation would have been based on the formulation given in the appendix of the Challenge Description.
 
-\paragraph{Idea:}
+\noindent\textbf{Idea:}
 Implement the MIP solver as described above and see how far we get.
 Then, use the built-in heuristics algorithms provided by SCIP (or FICO Xpress) to improve the solution or decrease the computation time.
 
-\paragraph{Problem:}
+\noindent\textbf{Problem:}
 There have been several issues.
 On the one hand, we have been working with a faulty MIP solver for quite some time.
 We think that we have fixed that at the time.
@@ -20,18 +20,13 @@ However, we have used the Greedy algorithm to solve the problem.
 
 
 \subsection{Divide and Conquer}
-\paragraph{Idea:}
-The idea is data-oriented.
+\textbf{Idea:}
 Since every courier is assigned a depot as starting point, an optimal solution will likely tend to contain many couriers picking up the delivery at a close pickup.
-Also, the two additional constraints : doing at most four deliveries and working at most 3 hours also support this locality.
-Hence, the idea is to and separate the data set into several subsets of couriers and deliveries that are near their corresponding depots (\textbf{divide}).
-
+Hence, the idea is to and separate the data set into several subsets of couriers and deliveries that are near their corresponding depots (\emph{divide}).
 Then, on all of these subinstances one could apply now a solver.
-If the problem instances are sufficiently small this could in principle also have been a MIP solver.
+At the end (\emph{conquer}) one simply combines these solutions using an $n$-opt strategy (as presented in the talk by Thorsten Koch on Saturday) by exchanging the deliveries between the couriers and keeping the changes if the objective improved and the solution is feasible.
 
-One simply combine these solutions use an $n$-opt strategy (as presented in the talk by Thorsten Koch on Saturday) to combine these instances by exchanging the deliveries between the couriers and keeping the changes if the objective improved and the solution is feasible.
-
-\paragraph{Problem:} One of the issues is that it depends on an already existing solver for the problem.
+\noindent\textbf{Problem:} One of the issues is that it depends on an already existing solver for the problem.
 Another one is that we ran out of time.
 
 \subsection{Assignment Problem}
