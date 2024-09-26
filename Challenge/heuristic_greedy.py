@@ -140,7 +140,7 @@ def greedy_heuristic(couriers, deliveries, distance_matrix):
 
 if __name__ == "__main__":
     np.random.seed(123456)
-    training_data_folder = "training_data_hard"
+    training_data_folder = "final_test_set"
     all_instance_data = process_all_instances(training_data_folder)
 
     for instance in all_instance_data:
@@ -196,7 +196,7 @@ if __name__ == "__main__":
 
         
         # Save the solution
-        output_folder_path = "./temp_solutions"
+        output_folder_path = "./final_solutions"
         instance_folder_path = './' + training_data_folder + '/' + instance['instance_name']
         if greedy_obj < assigment_obj:
             courier_order = [[delivery_id for delivery_id in route.stops] for route in greedy_sol]
