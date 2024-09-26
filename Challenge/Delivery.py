@@ -6,6 +6,7 @@ class Delivery:
         self.time_window_start = time_window_start
         self.pickup_stacking_id = pickup_stacking_id
         self.dropoff_loc = dropoff_loc
+        self.done = False
 
     def __repr__(self):
         return f"Delivery(ID={self.delivery_id}, Capacity={self.capacity}, Pickup Loc={self.pickup_loc}, " \

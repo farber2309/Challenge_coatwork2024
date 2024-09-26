@@ -3,6 +3,10 @@ import csv
 import argparse
 
 from read_data import Courier, Delivery, process_all_instances
+from Route import *
+from Delivery import *
+from Courier import * 
+
 
 # Define the Courier class
 # class Courier:
@@ -31,13 +35,13 @@ from read_data import Courier, Delivery, process_all_instances
 #            f"Time Window Start={self.time_window_start}, Pickup Stacking Id={self.pickup_stacking_id}, Dropoff Loc={self.dropoff_loc})"
 
 
-class Route:
-  def __init__(self, rider_id, stops):
-    self.rider_id = rider_id
-    self.stops = stops
+# class Route:
+#   def __init__(self, rider_id, stops):
+#     self.rider_id = rider_id
+#     self.stops = stops
 
-  def __repr__(self):
-    return f"Rider ID: {self.rider_id} - Stops: {self.stops}"
+#   def __repr__(self):
+#     return f"Rider ID: {self.rider_id} - Stops: {self.stops}"
 
 
 # Function to load couriers from CSV using the csv module
