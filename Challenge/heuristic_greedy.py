@@ -10,6 +10,7 @@ from helpers import get_route_cost, get_route_duration, copy_route, get_objectiv
 from first_solution import generate_initial_solution
 from output_results_to_csv import save_solution
 from assignment_problem import run_assignment_problem
+from simulated_annealing import simulated_annealing
 
 # 1c30caae-8d78-495c-9185-a5979ef31720
 # 088fc958-5dc8-4e4f-bbf1-ea213039a3f3 1996679 18719
@@ -108,7 +109,7 @@ def greedy_heuristic(couriers, deliveries, distance_matrix):
             if back and len(back_couriers_ids) != 0:
                 i = np.random.choice(range(len(back_couriers_ids)))
                 couriers_pool.append(couriers[back_couriers_ids[i]-cou_offset])
-                #print("append courier ", back_couriers_ids[i])
+                print("append courier ", back_couriers_ids[i])
                 back = False
                 back_couriers_ids = np.delete(back_couriers_ids, i)
                 
@@ -119,7 +120,7 @@ def greedy_heuristic(couriers, deliveries, distance_matrix):
                 
             tuple_detection_new = (done_delivery.count(False), len(couriers_pool), len(deliveries_pool))
             if tuple_detection_new == tuple_detection_prev:
-                # print("Detected stagnation, restarting with higher percentage.")
+                print("Detected stagnation, restarting with higher percentage.")
                 if percentage == 0.0:
                     percentage = 0.05 
                 percentage += 0.05
@@ -153,35 +154,55 @@ if __name__ == "__main__":
         distance_matrix = distance_matrix[1:, 1:]
         distance_matrix = distance_matrix.astype(int)
 
+        assigment_sol = []
+        assigment_obj = 9e6
         if len(couriers) > len(deliveries):
-            print("More couriers than deliveries")
-            routes_solutions = run_assignment_problem(couriers, deliveries, distance_matrix)
-            feasibility = is_all_feasible(routes_solutions, couriers, deliveries, distance_matrix)
+            assigment_sol = run_assignment_problem(couriers, deliveries, distance_matrix)
+            feasibility = is_all_feasible(assigment_sol, couriers, deliveries, distance_matrix)
             if feasibility:
-                obj_val = get_objective(routes_solutions, couriers, deliveries, distance_matrix)
-                print("Objective value assignment: ", obj_val)
+                assigment_obj = get_objective(assigment_sol, couriers, deliveries, distance_matrix)
+                print("Objective value assignment: ", assigment_obj)
             else:
                 print("error in assignment")
+
+        
+        dummy_sol = []
+        dummy_obj = 9e6
+
+        # greedy heuristic
+        greedy_sol = greedy_heuristic(couriers, deliveries, distance_matrix)
+        feasibility = is_all_feasible(greedy_sol, couriers, deliveries, distance_matrix)
+        greedy_obj = 9e6
+        if feasibility:
+            greedy_obj = get_objective(greedy_sol, couriers, deliveries, distance_matrix)
+            print("Objective value heuristic: ", greedy_obj)
         else:
-            # greedy heuristic
-            routes_solutions = greedy_heuristic(couriers, deliveries, distance_matrix)
-            feasibility = is_all_feasible(routes_solutions, couriers, deliveries, distance_matrix)
-            obj_val = 1e6
+            print("Infeasible solution with heuristic greedy")
+            # Dummy solution
+            dummy_sol = generate_initial_solution(couriers, deliveries, distance_matrix)
+            feasibility = is_all_feasible(dummy_sol, couriers, deliveries, distance_matrix)
+            dummy_obj = 1e6
             if feasibility:
-                obj_val = get_objective(routes_solutions, couriers, deliveries, distance_matrix)
-                print("Objective value heuristic: ", obj_val)
-            else:
-                print("Infeasible solution with heuristic greedy")
-                # Dummy solution
-                routes_solutions = generate_initial_solution(couriers, deliveries, distance_matrix)
-                feasibility = is_all_feasible(routes_solutions, couriers, deliveries, distance_matrix)
-                obj_val = 1e6
-                if feasibility:
-                    obj_val = get_objective(routes_solutions, couriers, deliveries, distance_matrix)
-                print("Objective value of dummy solution: ", obj_val)
+                obj_val = get_objective(dummy_sol, couriers, deliveries, distance_matrix)
+            print("Objective value of dummy solution: ", dummy_obj)
+
+        # Simulated annealing
+        # best_solution, best_objective = simulated_annealing(routes_solutions, initial_temp=1000, cooling_rate=0.995, max_iterations=2000, size_neighborhood=2, couriers=couriers, deliveries=deliveries, distance_matrix=distance_matrix)
+        # feasibility = is_all_feasible(best_solution, couriers, deliveries, distance_matrix)
+        # if feasibility:
+        #     sa_obj_val = get_objective(best_solution, couriers, deliveries, distance_matrix)
+        #     print("Objective value simulated annealing: ", sa_obj_val)
+
+
         
         # Save the solution
         output_folder_path = "./temp_solutions"
         instance_folder_path = './' + training_data_folder + '/' + instance['instance_name']
-        courier_order = [[delivery_id for delivery_id in route.stops] for route in routes_solutions]
+        if greedy_obj < assigment_obj:
+            courier_order = [[delivery_id for delivery_id in route.stops] for route in greedy_sol]
+        elif assigment_obj < dummy_obj:
+            courier_order = [[delivery_id for delivery_id in route.stops] for route in assigment_sol]
+        else:
+            courier_order = [[delivery_id for delivery_id in route.stops] for route in dummy_sol]
+            
         save_solution(courier_order, instance_folder_path, output_folder_path)

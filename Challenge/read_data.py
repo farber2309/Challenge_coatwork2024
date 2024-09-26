@@ -119,13 +119,13 @@ def process_all_instances(parent_folder):
     all_instances = []
     # Loop through each instance folder in the parent directory
     for i, instance_folder in enumerate(os.listdir(parent_folder)):
-        if i >= 7:
-            break
+        # if i >= 3:
+        #     break
         # very small: '0b220d8f-ba16-4848-86ef-b446ef436fce' 1 delivery
         # small: '1adef166-1111-45fd-b722-0f817c7fa055' 2 deliveries
         # large: '0ba3c52f-4d24-4033-be91-5dac2ad16a4f' 745 deliveries
 
-        # if instance_folder != '9d69dcda-cd7c-4d16-820f-01bc323b00a2' and instance_folder != '9441f44c-9ced-4eeb-84db-0f5170adba91' and instance_folder != '151e6ec9-b599-4eec-9745-643c1f034022':
+        # if instance_folder != '088fc958-5dc8-4e4f-bbf1-ea213039a3f3':
         #     continue
         instance_folder_path = os.path.join(parent_folder, instance_folder)
 
