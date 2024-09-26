@@ -26,3 +26,5 @@ __pycache__
 
 ## get rid of pdf
 *.pdf
+
+!15_team15_solution_description.pdf
