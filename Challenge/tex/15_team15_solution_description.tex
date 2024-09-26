@@ -1,13 +1,13 @@
 \documentclass[a4paper]{article}
 % \usepackage[UTF8]{ctex}
 \usepackage{standalone}
-\usepackage{geometry}[top = 10mm]
+\usepackage[top = 10mm, left = 20mm, right = 20mm]{geometry}
 
 \newcommand\path{.}
 
 \title{Team 15 -- Delivery Hero's Computational Challenge \\[0.75em] \Large Computational Optimization at Work 2024}
 
-\author{\begin{tabular}{lll}
+\author{\normalsize\begin{tabular}{lll}
         Laurie Boveroux & -- &  ,\tabularnewline%
         Mikhail Faber   & -- &  ,\tabularnewline%
         Marian Stengl   & -- & FU Berlin ,\tabularnewline
@@ -16,7 +16,7 @@
 
 \begin{document}%
 \maketitle%
-The methodology implemented in this approach is based on a greedy heuristic algorithm aimed at efficiently assigning couriers to deliveries while minimizing the total time of deliveries. The main objective is to find a solution that satisfies the problem's constraints -- such as delivery time windows, courier capacity, and route duration—within a set time limit.
+
 \section{Challenges and Solutions}%
 \input{\path /challenges_and_solutions}%
 \section{Final Approach}%

@@ -5,6 +5,7 @@
 % Final Approach: A detailed description of the final solution the team used for the challenge. Include brief explanations of the model, methodology, and any preprocessing steps.
 
 \begin{document}%
+The methodology implemented in this approach is based on a greedy heuristic algorithm aimed at efficiently assigning couriers to deliveries while minimizing the total time of deliveries. The main objective is to find a solution that satisfies the problem's constraints -- such as delivery time windows, courier capacity, and route duration—within a set time limit.
 Our greedy heuristic works by iteratively assigning deliveries to couriers based on a cost matrix. The algorithm prioritizes the lowest-cost assignments and updates the status of both couriers and deliveries after each assignment. Below is a breakdown of the key steps:
 
 \subsection{Main Loop: Courier-Delivery Assignment}
@@ -29,6 +30,8 @@ Sometimes, we arrive at a point when the riders that can handle the current deli
     \item \textbf{Stagnation:} When we increase the time step and the pool of riders does not change, we increase the time until a new courier is available, i.e. he finished its last delivery.
 \end{itemize}
 We have to note that the backtracking and the stagnation detection were useful only for the hard instances and not for the instances of the final sets.
+% DELETED FROM HERE
+\if0
 \subsection{Termination}
 The algorithm terminates under the following conditions:
 \begin{itemize}
@@ -39,6 +42,8 @@ At the end of each iteration, the algorithm checks whether the current solution 
 
 \subsection{Possible upgrades}
 Instead of computing the cost matrix between riders and deliveries in the pool in a 1 to 1 way, we can compute the cost in a way '1 couriers to combination of different deliveries'.
+\fi
+% DELETED UNTIL HERE
 
 
 

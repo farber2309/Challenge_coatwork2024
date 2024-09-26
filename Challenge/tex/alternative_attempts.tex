@@ -23,21 +23,22 @@ However, we have used the Greedy algorithm to solve the problem.
 \paragraph{Idea:}
 The idea is data-oriented.
 Since every courier is assigned a depot as starting point, an optimal solution will likely tend to contain many couriers picking up the delivery at a close pickup.
-Further, the two additional constraints : doing at most four deliveries and working at most 3 hours also support locality.
-Hence, the idea is to go through the data set and separate it into several subsets of couriers and deliveries that are near their corresponding depots (\textbf{divide}).
+Also, the two additional constraints : doing at most four deliveries and working at most 3 hours also support this locality.
+Hence, the idea is to and separate the data set into several subsets of couriers and deliveries that are near their corresponding depots (\textbf{divide}).
 
 Then, on all of these subinstances one could apply now a solver.
 If the problem instances are sufficiently small this could in principle also have been a MIP solver.
 
-Then, with feasible solutions for all the  solved subinstances, this would in principle be already a feasible solution for the original problem.
-
-However, one can also use a an $n$-opt strategy (as presented in the talk by Thorsten Koch on Saturday) to combine all of these instances by exchanging the deliveries between the couriers and keeping the changes if the objective improved and the solution is feasible.
+One simply combine these solutions use an $n$-opt strategy (as presented in the talk by Thorsten Koch on Saturday) to combine these instances by exchanging the deliveries between the couriers and keeping the changes if the objective improved and the solution is feasible.
 
 \paragraph{Problem:} One of the issues is that it depends on an already existing solver for the problem.
-Another one is that it may happen to 
+Another one is that we ran out of time.
 
 \subsection{Assignment Problem}
-While the primary focus is on the greedy heuristic, a comparison is made with the Hungarian algorithm, which solves the assignment problem by optimally matching couriers to deliveries based on their cost. This is computed when there are more couriers than deliveries. The solution from the heuristic and the assignment algorithm is compared, and the one with the lowest objective value is chosen as the final solution. We observed that whatever the instances of the final set, the objective with heuristic is always lower or equal to the one get with the assignment problem. However, in the hard instances, sometimes the greedy approach sometimes the assignment approach is better.
+We solve the assignment problem using the \emph{Hungarian algorithm}.
+This method solves the assignment problem by optimally matching couriers to deliveries based on their cost.
+This is computed when there are more couriers than deliveries. The solution from the heuristic and the assignment algorithm is compared, and the one with the lowest objective value is chosen as the final solution.
+In comparison, the greedy algorithm has performed better than the Hungarian method.
 
 \subsection{Simulated Annealing}
 The algorithm was presented by Thorsten Koch on Saturday morning. The objective was to use this local search heuristic after the greedy approach but it does not find any better solution. Some more researches must be done to define a good neighborhood.
