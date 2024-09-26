@@ -2,30 +2,36 @@ import os
 import csv
 import argparse
 
-# Define the Courier class
-class Courier:
-    def __init__(self, courier_id, location, capacity):
-        self.courier_id = courier_id
-        self.location = location
-        self.capacity = capacity
+from Delivery import *
+from Courier import * 
 
-    def __repr__(self):
-        return f"Courier(ID={self.courier_id}, Location={self.location}, Capacity={self.capacity})"
+
+# Define the Courier class
+# class Courier:
+#     def __init__(self, courier_id, location, capacity):
+#         self.courier_id = courier_id
+#         self.location = location
+#         self.capacity = capacity
+#         self.available_time = 0
+
+#     def __repr__(self):
+#         return f"Courier(ID={self.courier_id}, Location={self.location}, Capacity={self.capacity})"
 
 
 # Define the Delivery class
-class Delivery:
-    def __init__(self, delivery_id, capacity, pickup_loc, time_window_start, pickup_stacking_id, dropoff_loc):
-        self.delivery_id = delivery_id
-        self.capacity = capacity
-        self.pickup_loc = pickup_loc
-        self.time_window_start = time_window_start
-        self.pickup_stacking_id = pickup_stacking_id
-        self.dropoff_loc = dropoff_loc
+# class Delivery:
+#     def __init__(self, delivery_id, capacity, pickup_loc, time_window_start, pickup_stacking_id, dropoff_loc):
+#         self.delivery_id = delivery_id
+#         self.capacity = capacity
+#         self.pickup_loc = pickup_loc
+#         self.time_window_start = time_window_start
+#         self.pickup_stacking_id = pickup_stacking_id
+#         self.dropoff_loc = dropoff_loc
+#         self.done = False
 
-    def __repr__(self):
-        return f"Delivery(ID={self.delivery_id}, Capacity={self.capacity}, Pickup Loc={self.pickup_loc}, " \
-               f"Time Window Start={self.time_window_start}, Pickup Stacking Id={self.pickup_stacking_id}, Dropoff Loc={self.dropoff_loc})"
+#     def __repr__(self):
+#         return f"Delivery(ID={self.delivery_id}, Capacity={self.capacity}, Pickup Loc={self.pickup_loc}, " \
+#                f"Time Window Start={self.time_window_start}, Pickup Stacking Id={self.pickup_stacking_id}, Dropoff Loc={self.dropoff_loc})"
 
 
 # Function to load couriers from CSV using the csv module
@@ -112,11 +118,14 @@ def process_instance_folder(instance_folder_path):
 def process_all_instances(parent_folder):
     all_instances = []
     # Loop through each instance folder in the parent directory
-    for instance_folder in os.listdir(parent_folder):
+    for i, instance_folder in enumerate(os.listdir(parent_folder)):
+        if i >= 7:
+            break
         # very small: '0b220d8f-ba16-4848-86ef-b446ef436fce' 1 delivery
         # small: '1adef166-1111-45fd-b722-0f817c7fa055' 2 deliveries
         # large: '0ba3c52f-4d24-4033-be91-5dac2ad16a4f' 745 deliveries
-        # if instance_folder != '389f96b3-a8b9-4715-9260-6842e4509073':
+
+        # if instance_folder != '9d69dcda-cd7c-4d16-820f-01bc323b00a2' and instance_folder != '9441f44c-9ced-4eeb-84db-0f5170adba91' and instance_folder != '151e6ec9-b599-4eec-9745-643c1f034022':
         #     continue
         instance_folder_path = os.path.join(parent_folder, instance_folder)
 

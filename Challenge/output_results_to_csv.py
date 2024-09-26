@@ -50,6 +50,7 @@ python feasibility_checker.py [folder of testdata, e.g. ./training_data] [soluti
 
 import csv
 import os
+from Route import Route
 
 def output_solution_to_csv(courier_orders, output_file_path):
     with open(output_file_path, 'w', newline='') as csvfile:

@@ -38,6 +38,27 @@ def assign_couriers_to_deliveries(couriers, deliveries, distance_matrix_between_
     # Solve the assignment problem using the Hungarian algorithm
     return linear_sum_assignment(distance_matrix)
 
+def get_solution_from_assignment(row_indices, col_indices, couriers, deliveries):
+
+    routes = [Route(courier.courier_id, []) for courier in couriers]
+    offset_courirer = - 1 # courier id: from 1 to x included
+    offset_delivery = len(couriers) + 1 # delivery id: from x+1 to x+y included
+    for row, col in zip(row_indices, col_indices):
+        courirer_id = row + offset_courirer
+        delivery_id = col + offset_delivery
+        routes[row].stops.append(delivery_id)
+        routes[row].stops.append(delivery_id)
+
+
+    return routes
+
+def run_assignment_problem(couriers, deliveries, distance_matrix):
+    # Solve the assignment problem
+    row_indices, col_indices = assign_couriers_to_deliveries(couriers, deliveries, distance_matrix)
+
+    # Get the solution routes from the assignment
+    return get_solution_from_assignment(row_indices, col_indices, couriers, deliveries)
+
 
 if __name__ == "__main__":
     training_data_folder = "training_data"
@@ -71,14 +92,7 @@ if __name__ == "__main__":
             row_indices, col_indices = assign_couriers_to_deliveries(couriers, deliveries, distance_matrix)
             end_time = time.time()
 
-            routes = [Route(courier.courier_id, []) for courier in couriers]
-            offset_courirer = - 1 # courier id: from 1 to x included
-            offset_delivery = len(couriers) + 1 # delivery id: from x+1 to x+y included
-            for row, col in zip(row_indices, col_indices):
-                courirer_id = row + offset_courirer
-                delivery_id = col + offset_delivery
-                routes[row].stops.append(delivery_id)
-                routes[row].stops.append(delivery_id)
+            routes = get_solution_from_assignment(row_indices, col_indices, couriers, deliveries)
 
 
             assignment_objective = get_objective(routes, couriers, deliveries, distance_matrix)

@@ -27,12 +27,13 @@ def get_objective(solution, couriers, deliveries, distance_matrix):
         total_time += get_route_cost(route, couriers, deliveries, distance_matrix)
     return total_time
 
-def is_all_feasible(solution, couriers, deliveries):
+def is_all_feasible(solution, couriers, deliveries, traveltimes):
     for route in solution:
-        if not is_feasible(route, couriers, deliveries):
+        if not is_feasible(route, couriers, deliveries, traveltimes):
             return False
     return True
 
+# Function to get the duration of a route
 def get_route_duration(route, couriers, deliveries, travelTimes):
     currentTime = 0
     orders_in_bag = set()
@@ -317,3 +318,4 @@ def get_delivery(deliveries, delivery_id):
     if delivery.delivery_id == delivery_id:
       return delivery
   return None
+
